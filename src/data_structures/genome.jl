@@ -65,18 +65,54 @@ end
 """
 returns a single individual object with a randomized genome
 """
-function generate_genome(my_border::Shapefile.Polygon,n_fac = 500)
+#function generate_genome(my_border::Shapefile.Polygon,n_fac = 500)
+#    #fac_points = SVector{n_fac,Tuple{Float64,Float64}} #Vector{Tuple{Float64,Float64}}
+#    #build an array, check if each individual is in bounds
+#    fac_points = []
+#    
+#     while length(fac_points) <= n_fac
+#         fac_pos = gen_fac_pos(my_border)
+#             push!(fac_points,fac_pos)
+#         end
+#    static_fac_points = SVector{length(fac_points)}(fac_points)
+#    return static_fac_points
+#end
+
+
+
+"""
+returns a single individual object with a randomized genome
+"""
+function generate_genome(my_border::Shapefile.Polygon;n_fac = 500,kwargs...)
     #fac_points = SVector{n_fac,Tuple{Float64,Float64}} #Vector{Tuple{Float64,Float64}}
     #build an array, check if each individual is in bounds
     fac_points = []
     
      while length(fac_points) <= n_fac
-         fac_pos = gen_fac_pos(my_border)
+         fac_pos = gen_fac_pos(my_border,check_bounds = check_bounds)
+             push!(fac_points,fac_pos)
+         end
+    static_fac_points = SVector{length(fac_points)}(fac_points)
+    return static_fac_points
+
+end
+
+
+function generate_genome(my_geo_info::GeoInfo,n_fac = 500,kwargs...)
+    #fac_points = SVector{n_fac,Tuple{Float64,Float64}} #Vector{Tuple{Float64,Float64}}
+    #build an array, check if each individual is in bounds
+    fac_points = []
+     while length(fac_points) <= n_fac
+         @show length(fac_points)
+         fac_pos = gen_fac_pos(my_geo_info.border,my_geo_info.MBR,kwargs...)
              push!(fac_points,fac_pos)
          end
     static_fac_points = SVector{length(fac_points)}(fac_points)
     return static_fac_points
 end
+
+
+
 
 
 

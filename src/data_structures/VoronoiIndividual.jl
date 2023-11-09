@@ -1,14 +1,37 @@
 
 struct VoronoiIndividual <: AbstractIndividual
     fitness::Float64
-    #genome::Vector{Point2{Float64}}
-    genome
+    genome::Vector{Point2{Float64}}
     tess::Tessellation{Point2{Float64}}
     perimeters::Vector{Float64}
     areas::Vector{Float64}
     populations::Vector{Int64}
 
 end
+
+
+
+
+"""
+------------------
+Raster Methods
+------------------
+"""
+
+function create_rasterized_tess(tess::Tessellation{Point2{Float64}},ras::AbstractRaster)
+    tess_poly = GeometryBasics.Polygon.(tess.Cells)#convert voronoi cells to polygons
+    A = copy(ras) .= 0
+    #rasterized_poly =  map((i,poly_i) -> rasterize!(A,poly_i, fill=i, progress=false),enumerate(tess_poly))#rasterize voronoi polygons
+    [rasterize!(A,poly_i, fill=i, progress=false) for (i,poly_i) in enumerate(tess_poly)]#rasterize voronoi polygons
+    return A
+end
+
+function create_rasterized_tess(ind::VoronoiIndividual)
+    tess_poly = Polygon.(ind.tess.Cells)#convert voronoi cells to polygons
+    return create_rasterized_tess(tess_poly)
+end
+
+
 
 
 """
@@ -58,7 +81,7 @@ function voronoiperimeters(tess::Tessellation{Point2{Float64}})
 end
 
 
-function make_voronoi_individual(genome,fitness_function::Function,border)
+function make_voronoi_individual(genome,fitness_function::Function,border::Shapefile.Polygon)
 
     #@infiltrate
     polygon = convertShapefileMBRtoRectangle(border.MBR)
@@ -74,3 +97,22 @@ function make_voronoi_individual(genome,fitness_function::Function,border)
         voronoipopulation(idxs)
     )
 end
+
+
+function make_voronoi_individual(genome,fitness_function::Function,geo_info::GeoInfo)
+
+    #@infiltrate
+    mbr_rect = convertMBRtoRectangle(geo_info.MBR)
+    my_tess = voronoicells(Vector([i for i in genome]),mbr_rect)
+    idxs,dist = get_nearest_neighbors(genome,geo_info.pop_points)
+
+    VoronoiIndividual(
+        get_fitness(idxs,dist),
+        genome,
+        my_tess,
+        voronoiperimeters(my_tess),
+        voronoiarea(my_tess),
+        voronoipopulation(idxs)
+    )
+end
+
