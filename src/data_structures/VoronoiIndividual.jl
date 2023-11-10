@@ -10,21 +10,25 @@ struct VoronoiIndividual <: AbstractIndividual
 end
 
 
-
-
 """
 ------------------
 Raster Methods
 ------------------
 """
 
+function create_rasterized_tess(poly_list::AbstractArray,ras::AbstractRaster)
+    x,y = ras.dims
+    rasters_list = [MISSING_VAL*Raster(ones(x,y),missingval =MISSING_VAL ) for i in 1:length(poly_list)]#create empty raster for each polygon
+    [rasterize!(rasters_list[i],poly_i, fill=1, progress=false) for (i,poly_i) in enumerate(poly_list)]#rasterize voronoi polygons
+    return rasters_list
+end
+
+
 function create_rasterized_tess(tess::Tessellation{Point2{Float64}},ras::AbstractRaster)
     tess_poly = GeometryBasics.Polygon.(tess.Cells)#convert voronoi cells to polygons
-    A = copy(ras) .= 0
-    #rasterized_poly =  map((i,poly_i) -> rasterize!(A,poly_i, fill=i, progress=false),enumerate(tess_poly))#rasterize voronoi polygons
-    [rasterize!(A,poly_i, fill=i, progress=false) for (i,poly_i) in enumerate(tess_poly)]#rasterize voronoi polygons
-    return A
+    return create_rasterized_tess(tess_poly,ras)
 end
+
 
 function create_rasterized_tess(ind::VoronoiIndividual)
     tess_poly = Polygon.(ind.tess.Cells)#convert voronoi cells to polygons
@@ -33,6 +37,12 @@ end
 
 
 
+function mask_raster_vec(ras::AbstractRaster,B::AbstractArray)
+    masked_cells = boolmask.(B)#create boolean mask from rasterized polygon
+    masked_arr=map(mask_i -> mask(ras;with = mask_i),masked_cells)#mask arrulation raster with rastreized voronoi cells
+    return masked_arr
+end
+
 
 """
 ------------------
@@ -40,7 +50,31 @@ Voronoi Methods
 ------------------
 """
 
-function voronoipopulation(idx_list::Vector{Int64})
+
+#function voronoi_population(genome::AbstractArray,population::PopulationRaster,tess::Tessellation)
+#    ras = population.pop_points
+#    B = create_rasterized_tess(my_tess,ras)
+#    masked_pop = mask_raster_vec(ras,B)
+#    cell_pops = sum.(masked_pop .|> i -> replace_missing(i,0.0))#replace the missing values with 0 and sum reach array
+#    return cell_pops
+#end
+
+function voronoi_population(genome::AbstractArray,population::PopulationRaster,tess::Tessellation)
+    tess_poly = GeometryBasics.Polygon.(my_tess.Cells)
+    cell_pops = zonal(sum,population.pop_points,of = tess_poly)
+    return cell_pops
+end
+
+
+function voronoi_population(genome::AbstractArray,population::PopulationPoints,tess::Tessellation)
+    idx_list,dist = get_nearest_neighbors(genome,population.pop_points)
+    counts =Int.(zeros(maximum(idx_list)))
+    map(x ->  counts[x] = get(counts,x,0)+1,idx_list)
+    return counts
+end
+
+
+function voronoi_population(idx_list::Vector{Int64})
     """
     calc_population: given a list of the nearest facility for each citizen in the population, returen the total population of each Voronoi Cell 
     input: 

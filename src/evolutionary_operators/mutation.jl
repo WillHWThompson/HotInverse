@@ -65,6 +65,7 @@ function get_nearest_neighbors(genome,pop_points)
    """
     genome_mat = transpose(mapreduce(permutedims, vcat, genome))#concat array of lon lat points into 2xn matrix
     kdtree = KDTree(genome_mat)
+    @infiltrate
     idxs,dist = nn(kdtree,pop_points)#return the nearest facility and the distacne to the nearest facility
     return idxs,dist
 end

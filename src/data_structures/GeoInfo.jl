@@ -1,6 +1,8 @@
 
 using Shapefile
 
+const MISSING_VAL = -1
+
 
 #abstract type AbstractGeoInfo end
 #
@@ -36,7 +38,7 @@ struct MBR{P}
 end
 
 
-struct GeoInfo{ T}
+struct GeoInfo{T}
     border::T
     MBR::MBR
     population::Population
@@ -74,6 +76,8 @@ end
 Raster Generation 
 """
 
+
+
 """
     generate_pdf_raster(dist; my_width = 1, my_height = 1, my_res = 100)
 
@@ -95,7 +99,7 @@ function generate_pdf_raster(dist; my_width = 1, my_height = 1, my_res = 100)
     x_range =0:x_inc:my_width
     y_range= 0:y_inc:my_height
 
-    raster = Raster(zeros(X(x_range;sampling = Rasters.Intervals()),Y(y_range;sampling = Rasters.Intervals())))
+    raster = Raster(zeros(X(x_range;sampling = Rasters.Intervals()),Y(y_range;sampling = Rasters.Intervals())),missingval = MISSING_VAL)
 
     for (i,j) in Iterators.product(1:length(x_range),1:length(y_range))
         raster[i,j] = pdf(dist,[x_range[i],y_range[j]])
