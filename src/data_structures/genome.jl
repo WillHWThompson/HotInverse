@@ -117,12 +117,29 @@ end
 
 
 
-"""
--------------
-Mutation Functions
--------------
-"""
 
+
+
+"""
+-------------
+Distance Metrics
+-------------
+"""
+function euclidean_dist(p1,p2)
+    return √(sum((p1.-p2).^2))
+end
+
+function euclidean_exp(p1,p2;beta = 1)
+    return euclidean_dist(p1,p2)^beta
+end
+
+
+
+"""
+-------------
+Fitness Evaluation
+-------------
+"""
 
 """
 given a dataframe of nearest neigbors and distances to each point, return the mean distance to every point
@@ -180,6 +197,11 @@ function get_nearest_neighbors(genome,pop_points)
     return idxs,dist
 end
 
+"""
+-------------
+Mutation Functions
+-------------
+"""
 
 function mutate(genome, boundary, num_inds_to_change = 1)
     """

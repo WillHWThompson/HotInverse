@@ -5,10 +5,23 @@ struct VoronoiIndividual <: AbstractIndividual
     tess::Tessellation{Point2{Float64}}
     perimeters::Vector{Float64}
     areas::Vector{Float64}
-    populations::Vector{Int64}
+    populations::Vector{Float64}
 
 end
 
+
+"""
+-------------
+Distance Metrics
+-------------
+"""
+function euclidean_dist(p1,p2)
+    return √(sum((p1.-p2).^2))
+end
+
+function euclidean_exp(p1,p2;beta = 1)
+    return euclidean_dist(p1,p2)^beta
+end
 
 """
 ------------------
@@ -50,7 +63,6 @@ Voronoi Methods
 ------------------
 """
 
-
 #function voronoi_population(genome::AbstractArray,population::PopulationRaster,tess::Tessellation)
 #    ras = population.pop_points
 #    B = create_rasterized_tess(my_tess,ras)
@@ -60,7 +72,7 @@ Voronoi Methods
 #end
 
 function voronoi_population(genome::AbstractArray,population::PopulationRaster,tess::Tessellation)
-    tess_poly = GeometryBasics.Polygon.(my_tess.Cells)
+    tess_poly = GeometryBasics.Polygon.(tess.Cells)
     cell_pops = zonal(sum,population.pop_points,of = tess_poly)
     return cell_pops
 end
@@ -72,6 +84,34 @@ function voronoi_population(genome::AbstractArray,population::PopulationPoints,t
     map(x ->  counts[x] = get(counts,x,0)+1,idx_list)
     return counts
 end
+
+
+
+function dist_mat(my_genome::AbstractArray,geo_info::GeoInfo,tess::Tessellation{Point2{Float64}},dist_func::Function)
+    ras = geo_info.population.pop_points
+    tess_mp = tess.Cells .|> Polygon |> MultiPolygon
+    return dist_mat(ras,tess_mp,my_genome,dist_func)
+end
+
+function dist_mat(ras::AbstractRaster,tess_mp::AbstractArray,my_genome::AbstractArray,dist_func::Function)
+    points_ras = points(ras)|> collect |> Raster#get Raster with coordinates of each point
+    masked_cells = map(cell_i -> mask(points_ras;with =cell_i),tess_mp)#create a list of Raster masks for each voronoi cell
+    dist_rasters = [(x -> dist_func(genome[i],x)).(masked_cell_i) for (i,masked_cell_i) in enumerate(masked_cells)]#calculate the distance between each pixel in the masked region on the corresponding facility, save this as the pixel value in a new raster
+    dist_series = RasterSeries(dist_rasters,Ti(1:length(dist_rasters)))##combine these into a RasterSeries
+    my_mosaic = mosaic(first,dist_series)#strich them together into a single raster
+    return my_mosaic
+end
+
+
+function mean_dist(ras::AbstractRaster,tess_mp::AbstractArray,genome::AbstractArray,dist_func::Function)
+    dist_ras = dist_mat(ras,tess_mp,genome,dist_func)#calculate distance to nearest facility for each pixel 
+    pop_dist_ras = ras .* dist_ras#weight by population
+    mean_distance = sum(zonal(sum,pop_dist_ras,of = tess_poly))#calculate for each zone and sum
+    return mean_distance
+end
+
+
+
 
 
 function voronoi_population(idx_list::Vector{Int64})
@@ -86,6 +126,8 @@ function voronoi_population(idx_list::Vector{Int64})
     map(x ->  counts[x] = get(counts,x,0)+1,idx_list)
     return counts
 end
+
+
 
 
 function calc_perimeter(vertices)
@@ -137,16 +179,16 @@ function make_voronoi_individual(genome,fitness_function::Function,geo_info::Geo
 
     #@infiltrate
     mbr_rect = convertMBRtoRectangle(geo_info.MBR)
-    my_tess = voronoicells(Vector([i for i in genome]),mbr_rect)
-    idxs,dist = get_nearest_neighbors(genome,geo_info.pop_points)
+    tess_poly  = voronoicells(Vector([i for i in genome]),mbr_rect)
+    tess_mp = MultiPolygon(Polygon.(tess_poly.Cells))
 
-    VoronoiIndividual(
-        get_fitness(idxs,dist),
-        genome,
-        my_tess,
-        voronoiperimeters(my_tess),
-        voronoiarea(my_tess),
-        voronoipopulation(idxs)
-    )
+    #VoronoiIndividual(
+    #    fitness_function(geo_info.population.pop_points,tess_mp,genome),
+    #    genome,
+    #    my_tess,
+    #    voronoiperimeters(my_tess),
+    #    voronoiarea(my_tess),
+    #    voronoi_population(genome,geo_info.population,my_tess)
+    #)
 end
 
