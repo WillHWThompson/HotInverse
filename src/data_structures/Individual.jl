@@ -17,7 +17,6 @@ Constructors
 generate a test facility location
 """
 function gen_fac_pos(pop_data::PopulationPoints,geo_info::GeoInfo;check_bounds::Bool = false)
-
     my_border = geo_info.border
     mbr = geo_info.MBR
 
@@ -60,6 +59,14 @@ function gen_fac_pos(pop_data::PopulationRaster,geo_info::GeoInfo;n_facs::Int = 
     fac_points = GeometryBasics.Point2.(point_pairs)#conver to Point2 structs
     return fac_points
 end
+
+
+function gen_fac_pos(geo_info::GeoInfo;n_facs::Int = 10)
+    return gen_fac_pos(geo_info.population,geo_info,n_facs = n_facs)
+end
+
+
+
 
 
 

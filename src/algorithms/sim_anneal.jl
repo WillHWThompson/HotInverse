@@ -8,7 +8,7 @@ rng = Random.MersenneTwister() #unseeded
 
 
 
-function sim_anneal(fitness_function::Function,generate_genome_function::Function,constraint_function::Function,mutation_function::Function,geo_info;
+function sim_anneal(fitness_function::Function,generate_genome_function::Function,constraint_function::Function,mutation_function::Function;
                                 num_elements_to_mutate=1,total_generations=100,genome_length=500,
                                 num_parents=10,num_perturbations = 0,perturbation_size=1,perturbation_distribution = Pareto(),
                                 init_t = 1000,delta_t = 1,kwargs... )
@@ -43,30 +43,14 @@ function sim_anneal(fitness_function::Function,generate_genome_function::Functio
     best_ind_over_time = [] 
     best_ind = nothing 
 
-    #select perturbation distribution
-    if perturbation_distribution == "uniform"
-        perturbation_distribution = Distributions.Uniform()
-    elseif perturbation_distribution == "pareto"
-        perturbation_distribution = Distributions.Pareto()
-    elseif perturbation_distribution == "normal"
-        perturbation_distribution = Distributions.Normal()
-    elseif perturbation_distribution == "arcsine"
-        perturbation_distribution = Arcsine()
-    elseif perturbation_distribution == "exponential"
-        perturbation_distribution = Exponential()
-    else
-        println("perturbation dist does not match list of: 'pareto','normal','arcsine','exponential')")
-        perturbation_distribution = "normal"
-    end
-
     #create a initial random solution
-    new_genome = generate_genome_function(geo_info.border,genome_length)
-    new_fitness = fitness_function(new_genome,geo_info.pop_points)
-    ind = make_voronoi_individual(new_genome,fitness_function,geo_info.border)
+    #genome = generate_genome_function()
+    #ind = make_voronoi_individual(genome,fitness_function,geo_info.border)
+    ind = generate_ind_function()
 
 
     solution = ind
-    solution_fitness = new_fitness
+    solution_fitness = ind.fitness
     solution_fitness_diff = -999
 
     best_ind = ind
@@ -82,42 +66,18 @@ function sim_anneal(fitness_function::Function,generate_genome_function::Functio
     #a/(10^(ceil(log10(a)))
     for t in 1:total_generations
         #println("generation $t")
-        new_genome1 = mutation_function(ind.genome,geo_info.border,num_elements_to_mutate)
-       # @infiltrate
-        fitness_orig_1 = fitness_function(new_genome1,geo_info.pop_points)
+        new_individual1 = mutation_function(ind)
+        if constraint_function(new_individual1)
 
-        new_genome_perturbed1 = new_genome1
-
-            if num_perturbations > 0
-            # do perturbation
-                for i in 1:num_perturbations
-                    new_genome_perturbed1 = perturb(new_genome_perturbed1, geo_info, perturbation_size, perturbation_distribution)
-                end
-            else
-                new_genome_perturbed1 = new_genome1
-            end
-
-            fitness_perturb_1 = fitness_function(new_genome_perturbed1,geo_info.pop_points)
-            fit_diff_1 = fitness_perturb_1 - fitness_orig_1
-
-            #@show fit_diff_1
-            #create new individual structs with the data
-            new_individual1 = make_voronoi_individual(new_genome_perturbed1,fitness_function,geo_info.border)
-            
             fit_diff = new_individual1.fitness-ind.fitness#the difference in fitness between this generation and the next
             quality_exp = exp((fit_diff)/(init_t*(delta_t^t)))
-            #@show fit_diff
 
-            if constraint_function(new_individual1)
-                if fit_diff > 0#if the fitness of the new individual is higher
-                    #println("accepting new ind")
-                    ind = new_individual1
-                elseif rand() < quality_exp#or with a certian probabilty set by the schedule
-                    #println("accepting new ind with lower fitness")
-                    ind = new_individual1
-                end
+            if fit_diff > 0#if the fitness of the new individual is higher
+                #println("accepting new ind")
+                ind = new_individual1 elseif rand() < quality_exp#or with a certian probabilty set by the schedule println("accepting new ind with lower fitness")
+                ind = new_individual1
             end
-
+        end
 
         solution = ind
         solution_fitness = solution.fitness
@@ -128,7 +88,6 @@ function sim_anneal(fitness_function::Function,generate_genome_function::Functio
         push!(best_ind_over_time,best_ind)
         push!(fitness_over_time,(solution_fitness)) # record the fitness of the current best over evolutionary time
       
-        #println("helo")
         ind_fit_values = ind.fitness
         push!(population_stats,ind_fit_values)
         #@infiltrate
@@ -151,7 +110,7 @@ end
 
 function sim_anneal(fitness_function::Function,generate_genome_function::Function,geo_info;
                                 num_elements_to_mutate=1,total_generations=100,genome_length=500,
-                                num_parents=10,num_perturbations = 0,perturbation_size=1,perturbation_distribution = Pareto(),
+                                num_parents=10,
                                 init_t = 1000,delta_t = 1,kwargs... )
 
     """simulated annealing 
@@ -183,21 +142,6 @@ function sim_anneal(fitness_function::Function,generate_genome_function::Functio
     best_ind_over_time = [] 
     best_ind = nothing 
 
-    #select perturbation distribution
-    if perturbation_distribution == "uniform"
-        perturbation_distribution = Distributions.Uniform()
-    elseif perturbation_distribution == "pareto"
-        perturbation_distribution = Distributions.Pareto()
-    elseif perturbation_distribution == "normal"
-        perturbation_distribution = Distributions.Normal()
-    elseif perturbation_distribution == "arcsine"
-        perturbation_distribution = Arcsine()
-    elseif perturbation_distribution == "exponential"
-        perturbation_distribution = Exponential()
-    else
-        println("perturbation dist does not match list of: 'pareto','normal','arcsine','exponential')")
-        perturbation_distribution = "normal"
-    end
 
     #create a initial random solution
     new_genome = generate_genome_function(geo_info.border,genome_length)

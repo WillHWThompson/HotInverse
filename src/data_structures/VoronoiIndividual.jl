@@ -67,7 +67,7 @@ Voronoi Methods
 #    ras = population.pop_points
 #    B = create_rasterized_tess(my_tess,ras)
 #    masked_pop = mask_raster_vec(ras,B)
-#    cell_pops = sum.(masked_pop .|> i -> replace_missing(i,0.0))#replace the missing values with 0 and sum reach array
+#    cell_pops = sum.(masked_pop .|> i -> replace_missing(i,0.0))#replace the hmissing values with 0 and sum reach array
 #    return cell_pops
 #end
 
@@ -96,7 +96,8 @@ end
 function dist_mat(ras::AbstractRaster,tess_mp::AbstractArray,my_genome::AbstractArray,dist_func::Function)
     points_ras = points(ras)|> collect |> Raster#get Raster with coordinates of each point
     masked_cells = map(cell_i -> mask(points_ras;with =cell_i),tess_mp)#create a list of Raster masks for each voronoi cell
-    dist_rasters = [(x -> dist_func(genome[i],x)).(masked_cell_i) for (i,masked_cell_i) in enumerate(masked_cells)]#calculate the distance between each pixel in the masked region on the corresponding facility, save this as the pixel value in a new raster
+    #@infiltrate
+    dist_rasters = [(x -> dist_func(my_genome[i],x)).(masked_cell_i) for (i,masked_cell_i) in enumerate(masked_cells)]#calculate the distance between each pixel in the masked region on the corresponding facility, save this as the pixel value in a new raster
     dist_series = RasterSeries(dist_rasters,Ti(1:length(dist_rasters)))##combine these into a RasterSeries
     my_mosaic = mosaic(first,dist_series)#strich them together into a single raster
     return my_mosaic
@@ -106,11 +107,9 @@ end
 function mean_dist(ras::AbstractRaster,tess_mp::AbstractArray,genome::AbstractArray,dist_func::Function)
     dist_ras = dist_mat(ras,tess_mp,genome,dist_func)#calculate distance to nearest facility for each pixel 
     pop_dist_ras = ras .* dist_ras#weight by population
-    mean_distance = sum(zonal(sum,pop_dist_ras,of = tess_poly))#calculate for each zone and sum
+    mean_distance = sum(zonal(sum,pop_dist_ras,of = tess_mp))#calculate for each zone and sum
     return mean_distance
 end
-
-
 
 
 
@@ -175,20 +174,40 @@ function make_voronoi_individual(genome,fitness_function::Function,border::Shape
 end
 
 
-function make_voronoi_individual(genome,fitness_function::Function,geo_info::GeoInfo)
-
+function make_voronoi_individual(genome::AbstractArray,fitness_function::Function,geo_info::GeoInfo)
     #@infiltrate
     mbr_rect = convertMBRtoRectangle(geo_info.MBR)
     tess_poly  = voronoicells(Vector([i for i in genome]),mbr_rect)
     tess_mp = MultiPolygon(Polygon.(tess_poly.Cells))
 
-    #VoronoiIndividual(
-    #    fitness_function(geo_info.population.pop_points,tess_mp,genome),
-    #    genome,
-    #    my_tess,
-    #    voronoiperimeters(my_tess),
-    #    voronoiarea(my_tess),
-    #    voronoi_population(genome,geo_info.population,my_tess)
-    #)
+    VoronoiIndividual(
+        fitness_function(geo_info.population.pop_points,tess_mp,genome),
+        genome,
+        tess_poly,
+        voronoiperimeters(tess_poly),
+        voronoiarea(tess_poly),
+        voronoi_population(genome,geo_info.population,tess_poly)
+    )
 end
+
+
+function make_voronoi_individual(generate_genome_function::Function,fitness_function::Function,geo_info::GeoInfo)
+    #@infiltrate
+    genome = generate_genome_function()
+    mbr_rect = convertMBRtoRectangle(geo_info.MBR)
+    tess_poly  = voronoicells(Vector([i for i in genome]),mbr_rect)
+    tess_mp = MultiPolygon(Polygon.(tess_poly.Cells))
+
+    VoronoiIndividual(
+        fitness_function(geo_info.population.pop_points,tess_mp,genome),
+        genome,
+        tess_poly,
+        voronoiperimeters(tess_poly),
+        voronoiarea(tess_poly),
+        voronoi_population(genome,geo_info.population,tess_poly)
+    )
+end
+
+
+
 

@@ -78,8 +78,6 @@ returns a single individual object with a randomized genome
 #    return static_fac_points
 #end
 
-
-
 """
 returns a single individual object with a randomized genome
 """
