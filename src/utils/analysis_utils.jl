@@ -70,3 +70,35 @@ function plot_genome(genome,geo_info;title = "")
     return current()
 end
 
+
+
+function plot_voronoi_raster(genome,fitness_function,geo_info;title = "")
+    v_ind = make_voronoi_individual(genome,fitness_function,geo_info)
+    mbr_rect = convertMBRtoRectangle(geo_info.MBR)
+    my_tess = voronoicells(Vector([i for i in genome]),mbr_rect)
+    tess_poly = GeometryBasics.Polygon.(my_tess.Cells)
+    tess_mp = MultiPolygon(tess_poly)
+    ras = geo_info.population.pop_points
+    ras_tess = create_rasterized_tess(tess_mp,ras)
+    ras_tess = ras_tess .|> i -> replace_missing(i,0.0)
+    ras_tess_collected = collect_voronoi_raster(ras_tess)
+    heatmap(ras_tess_collected)
+    return current()
+end
+
+function plot_population_with_tess(genome,fitness_function,geo_info,title = "")
+    v_ind = make_voronoi_individual(genome,fitness_function,geo_info)
+    mbr_rect = convertMBRtoRectangle(geo_info.MBR)
+    my_tess = voronoicells(Vector([i for i in genome]),mbr_rect)
+    tess_poly = GeometryBasics.Polygon.(my_tess.Cells)
+    tess_mp = MultiPolygon(tess_poly)
+    heatmap(geo_info.population.pop_points,legend = false)
+    plot!(my_tess,color = :white,legend = false)
+    scatter!(genome,color = :white,title = title,legend = false)
+    return current()
+end
+
+
+
+
+

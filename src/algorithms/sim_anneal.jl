@@ -64,11 +64,13 @@ function sim_anneal(fitness_function::Function,generate_genome_function::Functio
     delta_t = delta_t/(10^(ceil(log10(delta_t))))
 
     #a/(10^(ceil(log10(a)))
+    println("Starting Annealing Process...")
     for t in 1:total_generations
-        #println("generation $t")
+        if t % 50 == 0
+           println("\tgeneration $t")
+        end
         new_individual1 = mutation_function(ind)
         if constraint_function(new_individual1)
-
             fit_diff = new_individual1.fitness-ind.fitness#the difference in fitness between this generation and the next
             quality_exp = exp((fit_diff)/(init_t*(delta_t^t)))
 
@@ -77,6 +79,10 @@ function sim_anneal(fitness_function::Function,generate_genome_function::Functio
                 ind = new_individual1 elseif rand() < quality_exp#or with a certian probabilty set by the schedule println("accepting new ind with lower fitness")
                 ind = new_individual1
             end
+        else
+           a=  constraint_function(new_individual1)
+           @show a
+           #println("individual violated constraint. value: $value, constraint: $my_constraint")
         end
 
         solution = ind

@@ -65,13 +65,12 @@ function get_nearest_neighbors(genome,pop_points)
    """
     genome_mat = transpose(mapreduce(permutedims, vcat, genome))#concat array of lon lat points into 2xn matrix
     kdtree = KDTree(genome_mat)
-    @infiltrate
     idxs,dist = nn(kdtree,pop_points)#return the nearest facility and the distacne to the nearest facility
     return idxs,dist
 end
 
 
-function mutate(genome, boundary; num_inds_to_change = 1,add_fac_prob = 0.0,remove_fac_prob = 0.0)
+function mutate(genome::AbstractArray,geo_info::GeoInfo; num_inds_to_change = 1,add_fac_prob = 0.0,remove_fac_prob = 0.0)
     """
     mutate: mutate the ganome of an individual, randomly relocating a number of facilities
     """
@@ -79,24 +78,28 @@ function mutate(genome, boundary; num_inds_to_change = 1,add_fac_prob = 0.0,remo
     indices_to_change = sample(1:length(genome),num_inds_to_change)
 
     new_genome = Vector(deepcopy(genome))
+
     for index in indices_to_change #for each indicie sampled, move the facility to a random location
         #editing the array indices of an immutable struct..
-        new_genome[index] = gen_fac_pos(boundary)
+        new_genome[index] = gen_fac_pos(geo_info,n_facs =1)[1]
     end
 
     if rand()<add_fac_prob
-        push!(new_genome, gen_fac_pos(boundary))
+        push!(new_genome, gen_fac_pos(geo_info,n_facs = 1)[1])
     end
     if (rand()< remove_fac_prob) & (length(new_genome) > 1)
         index_to_remove = sample(1:length(genome))
         splice!(new_genome,index_to_remove)
     end
 
-
-
-
-
     return SVector{(length(new_genome)),Point2{Float64}}(new_genome)
+end
+
+
+function mutate(ind::AbstractIndividual,geo_info::GeoInfo,generate_ind_function::Function; num_inds_to_change = 1,add_fac_prob = 0.0,remove_fac_prob = 0.0)
+    genome = ind.genome
+    mutated_genome = mutate(genome,geo_info;num_inds_to_change,add_fac_prob,remove_fac_prob)
+    return generate_ind_function(mutated_genome)
 end
 
 
@@ -135,7 +138,7 @@ split_by(): takes in an array and a list of indicies, splits the array into sub 
     map(x->to_split[x],ranges) 
 end
 
-function crossover(genome1,genome2,crossover_points=2)
+function crossover(genome1,genome2;crossover_points=2)
 """
 crossover(): take two genomes and perform an n_point crossover
 input: 

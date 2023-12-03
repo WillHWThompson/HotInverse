@@ -177,7 +177,17 @@ end
 function make_voronoi_individual(genome::AbstractArray,fitness_function::Function,geo_info::GeoInfo)
     #@infiltrate
     mbr_rect = convertMBRtoRectangle(geo_info.MBR)
-    tess_poly  = voronoicells(Vector([i for i in genome]),mbr_rect)
+    tess_poly = 0
+
+    try
+        tess_poly  = voronoicells(Vector([i for i in genome]),mbr_rect)
+    catch e
+        println("error")
+        @infiltrate
+        println("error for real!")
+    end
+
+
     tess_mp = MultiPolygon(Polygon.(tess_poly.Cells))
 
     VoronoiIndividual(
