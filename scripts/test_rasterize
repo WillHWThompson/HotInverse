@@ -1,0 +1,32 @@
+using Rasters, RasterDataSources, ArchGDAL, Plots, Dates, Shapefile, Downloads
+using Rasters.LookupArrays
+
+
+dimz = X(Projected(0:0.01:1; sampling=Intervals(), crs=EPSG(4326))),
+       Y(Projected(0:0.01:1; sampling=Intervals(), crs=EPSG(4326)))
+
+A = zeros(UInt32, dimz; missingval=UInt32(0))
+
+typeof(dimz)
+
+
+us_data_dir = srcdir("data","rect_data")
+geo_info = init_geoinfo(us_data_dir,pop_dir = "/pop_points/pop_points.csv")
+
+genome = generate_genome(geo_info.border,10)
+ind = make_voronoi_individual(genome,get_fitness,geo_info.border)
+
+
+
+
+
+function create_rasterized_tess(ind::VoronoiIndividual)
+    tess_poly = Polygon.(ind.tess.Cells)#convert voronoi cells to polygons
+    rasterized_poly =  map(poly_i -> rasterize!(A,poly_i, fill=1, progress=false),tess_poly)#rasterize voronoi polygons
+    A = zeros(UInt32, dimz; missingval=UInt32(0))
+[rasterize!(A,poly_i, fill=i, progress=false) for (i,(raster_i,poly_i)) in enumerate(zip_a)]
+
+plot(A)
+
+Polygon(Point{2, Int}[(3, 1), (4, 4), (2, 4), (1, 2), (3, 1)])
+

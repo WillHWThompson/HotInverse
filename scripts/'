@@ -1,0 +1,98 @@
+using DrWatson
+@quickactivate "HotInverse"
+using Shapefile
+using Revise
+include(srcdir("main.jl"))#this line will make all the code available
+using LibGEOS
+
+us_data_dir = srcdir("data","rect_data")
+geo_info = init_geoinfo(us_data_dir,pop_dir = "/pop_points/pop_points.csv")
+
+
+
+genome = generate_genome(geo_info.border,4)
+polygon = convertShapefileMBRtoRectangle(geo_info.border.MBR)
+mbr = generate_MBR_from_points(geo_info.pop_points,delta = 5.0) 
+
+
+
+
+ind = make_voronoi_individual(genome,get_fitness)
+
+
+area_constraint(ind,5.0)
+
+
+sim_anneal(get_fitness,generate_genome,area_constraint,mutate,geo_info)
+
+
+generate_genome(geo_info.border,500)
+
+
+# VoronoiIndividual(
+#     get_fitness(idxs,dist),
+#     genome,
+#     my_tess,
+#     voronoiperimeters(my_tess),
+#     voronoiarea(my_tess),
+#     voronoipopulation(idxs)
+# )
+
+
+# idxs
+# dist[1]
+
+
+
+function voronoipopulation(idx_list::Vector{Int64})
+    """
+    calc_population: given a list of the nearest facility for each citizen in the population, returen the total population of each Voronoi Cell 
+    input: 
+        idx_list::Vector{Int64}: a list of the nearest facility for each individual in the population
+    returns: 
+        counts::Vector{Int64}: the total number of individuals in each index
+    """
+    counts =Int.(zeros(maximum(idx_list)))
+    map(x ->  counts[x] = get(counts,x,0)+1,idx_list)
+    return counts
+end
+
+
+function calc_perimeter(vertices)
+    """
+    calc_perimeter: take in a list of veritices of a polygon and returns a the perimiter of the shape
+    """
+    perimeter = 0.0
+    # Loop through each pair of adjacent vertices and add the distance between them to the perimeter
+    n = length(vertices)
+    @inbounds for i in eachindex(vertices)
+        j = mod(i, n) + 1
+        dx = vertices[j][1] - vertices[i][1]
+        dy = vertices[j][2] - vertices[i][2]
+        perimeter += sqrt(dx^2 + dy^2)
+    end
+    return perimeter
+end
+
+
+function voronoiperimeters(tess::Tessellation{Point2{Float64}})
+    """
+    get_cell_perimeters: take in a Tesselation object from VoronoiCells.jl and returns the perimiters of each cell in a list
+    input: 
+        tess::Tesselation, the Voronoi Tesselation object returned by vornoitess()
+    """
+    map(x ->calc_perimeter(x),tess.Cells)
+end
+
+
+colors = [:red,:blue,:green,:purple,:yellow]
+idx_color = Dict(i => i%length(colors) for i in collect(1:maximum(idxs)))
+
+
+scatter(geo_info.pop_points,color =[idx_color[i] for i in idxs])
+
+plot!(my_tess)
+
+scatter!(Vector([i for i in genome]),color = [idx_color[i] for i in eachindex(genome) ],markersize = 10)
+annotate!([(genome[i][1] + 0.02, genome[i][2] + 0.03, Plots.text(i)) for i in eachindex(genome)])
+savefig(plotsdir("testing_plots","test.png"))

@@ -1,5 +1,15 @@
 using DrWatson
 
+
+"""
+Misc. Timelines
+"""
+
+function has_repeated_vector(matrix)
+    vector_sets = Set(matrix)
+    return length(vector_sets) != size(matrix, 1)
+end
+
 """
 STATISTICAL SIGNIFICANE INTERVALS
 """
@@ -73,7 +83,8 @@ end
 
 
 function plot_voronoi_raster(genome,fitness_function,geo_info;title = "")
-    v_ind = make_voronoi_individual(genome,fitness_function,geo_info)
+    v_ind = genome
+    #v_ind = make_voronoi_individual(genome,fitness_function,geo_info)
     mbr_rect = convertMBRtoRectangle(geo_info.MBR)
     my_tess = voronoicells(Vector([i for i in genome]),mbr_rect)
     tess_poly = GeometryBasics.Polygon.(my_tess.Cells)
@@ -86,8 +97,9 @@ function plot_voronoi_raster(genome,fitness_function,geo_info;title = "")
     return current()
 end
 
-function plot_population_with_tess(genome,fitness_function,geo_info,title = "")
-    v_ind = make_voronoi_individual(genome,fitness_function,geo_info)
+function plot_population_with_tess(genome,fitness_function,geo_info;title = "")
+    #v_ind = make_voronoi_individual(genome,fitness_function,geo_info)
+    v_ind  = genome
     mbr_rect = convertMBRtoRectangle(geo_info.MBR)
     my_tess = voronoicells(Vector([i for i in genome]),mbr_rect)
     tess_poly = GeometryBasics.Polygon.(my_tess.Cells)

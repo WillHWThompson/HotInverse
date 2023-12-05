@@ -1,26 +1,20 @@
-function perimeter_constraint(individual::VoronoiIndividual,perimiter_constraint::Float64,exponent = 1;return_val = false)
-    bool_val = sum(individual.perimeters) < perimiter_constraint ? true : false
-    if return_val
-        return bool_val,sum(individual.perimeters),perimiter_constraint 
-    else
-        return bool_val
-    end
+function perimeter_constraint(individual::VoronoiIndividual,perimiter_constraint::Float64,exponent::Float64 = 1)
+    ind_sum = sum(individual.perimeters)
+    bool_val =  ind_sum < perimiter_constraint ? true : false
+    @debug "constraint_sum $ind_sum, constraint_value: $perimiter_constraint" #$(sum(individual.areas)"
+    return bool_val
 end
 
-function area_constraint(individual::VoronoiIndividual,area_constraint::Float64,exponent = 1;return_val = false)
-    bool_val = sum(individual.areas)^exponent < area_constraint ? true : false
-    if return_val
-        return bool_val,sum(individual.areas)#,area_constraint 
-    else
-        return bool_val
-    end
+function area_constraint(individual::VoronoiIndividual,area_constraint::Float64,exponent::Float64 = 1)
+    ind_sum = sum(individual.areas)^exponent 
+    bool_val = ind_sum < area_constraint ? true : false
+    @debug "constraint_sum $ind_sum, constraint_value: $area_constraint" #$(sum(individual.areas)"
+    return bool_val
 end
 
-function number_constraint(individual::VoronoiIndividual,number_constraint::Float64,exponent = 1;return_val = false)
-    bool_val = length(individual.genome)  ==  number_constraint ? true : false
-    if return_val
-        return bool_val,length(individual.genome),number_constraint 
-    else
-        return bool_val
-    end
+function number_constraint(individual::VoronoiIndividual,number_constraint::Float64,exponent::Float64 = 1)
+    ind_sum = length(individual.genome)
+    bool_val = ind_sum  ==  number_constraint ? true : false
+    @debug "constraint_sum $ind_sum, constraint_value: $number_constraint" #$(sum(individual.areas)"
+    return bool_val
 end

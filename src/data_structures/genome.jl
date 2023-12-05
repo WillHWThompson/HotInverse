@@ -44,7 +44,7 @@ Constructors
 generate a test facility location
 """
 function gen_fac_pos(my_border)
-    epsilon = 0.11#ensure points are at leas epsilon away from the border
+    epsilon = 0.10#ensure points are at leas epsilon away from the border
     is_in_bounds = false
     while is_in_bounds == false
         test_pos = Point2(rand(my_border.MBR.left+epsilon:RAND_INTERVAL:my_border.MBR.right-epsilon),rand(my_border.MBR.bottom+epsilon:RAND_INTERVAL:my_border.MBR.top-epsilon))

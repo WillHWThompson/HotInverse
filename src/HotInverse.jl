@@ -5,6 +5,7 @@ using Reexport
 @reexport using GeometryTypes: in as GT_in
 @reexport using NearestNeighbors, StaticArrays, DataFrames,Statistics,StatsBase,Distributions,Rasters   
 @reexport using Revise, Infiltrator
+@reexport using Logging
 
 #make sure you include Shapefile seperatley
 
