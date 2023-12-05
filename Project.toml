@@ -1,6 +1,27 @@
-name = "tmp"
-[compat]
-julia = "1.8.0"
-DrWatson = "2.12.4"
+name = "HotInverse"
+uuid = "288d4c33-37c8-48e6-bf2d-0cfe56d4d1cf"
+authors = ["WillHWThompson <will.w.thompson@gmail.com>"]
+version = "0.1.0"
+
 [deps]
+ArchGDAL = "c9ce4bd3-c3d5-55b8-8973-c0e20141b8c3"
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
+GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
+GeometryTypes = "4d00f742-c7ba-57c2-abde-4428a4b178cb"
+IPython = "18364772-b071-5c00-bfd7-ceeaffab630a"
+Infiltrator = "5903a43b-9cc3-4c30-8d17-598619ec4e9b"
+LibGEOS = "a90b1aa1-3769-5649-ba7e-abc5a9d163eb"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+Luxor = "ae8d54c2-7ccd-5906-9d76-62fc9837b5bc"
+PGFPlotsX = "8314cec4-20b6-5062-9cdb-752b83310925"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+RasterDataSources = "3cb90ccd-e1b6-4867-9617-4276c8b2ca36"
+Rasters = "a3a2b9e3-a471-40c9-b274-f788e487c689"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
+
+[compat]
+DrWatson = "2.12.3"
+julia = "1.8.0"
