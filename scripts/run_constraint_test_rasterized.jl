@@ -1,8 +1,28 @@
-using DrWatson
-@quickactivate "HotInverse"
-using Shapefile
-using Revise
-include(srcdir("HotInverse.jl"))#this line will make all the code available
+using Distributed
+
+@everywhere begin
+	using DrWatson
+	@quickactivate "HotInverse"
+	using Revise
+	include(srcdir("HotInverse.jl"))#this line will make all the code available
+end
+
+
+
+try 
+	
+    global num_cores = parse(Int, ENV["SLURM_CPUS_PER_TASK"]) 
+	println("using slurm cores")
+catch 
+    global num_cores = Threads.nthreads() 
+end 
+
+addprocs(num_cores) 
+ 
+println("Number of cores: ", nprocs()) 
+println("Number of workers: ", nworkers()) 
+
+
 
 #debug_logger = ConsoleLogger(stderr, Logging.Debug)
 debug_logger = ConsoleLogger(stderr, Logging.Info)
@@ -49,11 +69,10 @@ all_params = Dict(
 
 dicts = dict_list(all_params)
 
-
+@everywhere begin
 function convert_point_to_vec(ind)
     return Vector.(ind)
 end
-
 
 function make_sim(d::Dict)
 
@@ -80,7 +99,7 @@ function make_sim(d::Dict)
 
 end
 
-
+end
 
 f_list = []
 
