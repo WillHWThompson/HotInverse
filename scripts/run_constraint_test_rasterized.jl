@@ -1,12 +1,10 @@
 using Distributed
-
 @everywhere begin
 	using DrWatson
 	@quickactivate "HotInverse"
 	using Revise
 	include(srcdir("HotInverse.jl"))#this line will make all the code available
 end
-
 
 
 try 
@@ -23,8 +21,6 @@ println("Number of cores: ", nprocs())
 println("Number of workers: ", nworkers()) 
 
 
-
-#debug_logger = ConsoleLogger(stderr, Logging.Debug)
 debug_logger = ConsoleLogger(stderr, Logging.Info)
 global_logger(debug_logger);
 
@@ -105,10 +101,11 @@ f_list = []
 
 #generate data from sims
 for (i,d) in enumerate(dicts)
-@show d
-my_d = deepcopy(d)
-f = make_sim(my_d)
-push!(f_list,f)
+	println("Running on thread $(Threads.threadid)")
+	@show d
+	my_d = deepcopy(d)
+	f = make_sim(my_d)
+	push!(f_list,f)
 end
 
 

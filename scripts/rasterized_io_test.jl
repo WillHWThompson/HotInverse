@@ -2,7 +2,10 @@
 @quickactivate "HotInverse"
 using Shapefile
 using Revise
-@everywhere include(srcdir("HotInverse.jl"))#this line will make all the code available
+
+src_path = srcdir("HotInverse.jl")
+@everywhere src_path
+@everywhere include($src_path)#this line will make all the code available
 
 ##
 #debug_logger = ConsoleLogger(stderr, Logging.Debug)
@@ -82,22 +85,22 @@ function make_sim(d::Dict)
 end
 
 
-##
 
 f_list = []
 
 #generate data from sims
-for (i,d) in enumerate(dicts)
-@show d
-my_d = deepcopy(d)
-f = make_sim(my_d)
-push!(f_list,f)
+Threads.@threads for (i,d) in enumerate(dicts)
+	@show d
+	my_d = deepcopy(d)
+	f = make_sim(my_d)
+	push!(f_list,f)
 end
 
 ##
 
 #save sims
-for (i,f) ∈ enumerate(f_list)
+Threads.@threads for (i,f) ∈ enumerate(f_list)
+	println("Running on thread $(Threads.threadid)")
     f["constraint"] = String(Symbol(f["constraint"]))
     my_savename = datadir("rasters","io_test",savename(f,"jld2")) 
     @show my_savename
@@ -105,8 +108,8 @@ for (i,f) ∈ enumerate(f_list)
     #wsave(my_savename,f)
     my_savename_pdf = replace(my_savename,"jld2" => "svg")
     best_ind_i = f["best_ind_over_time"][length(f["best_ind_over_time"])]
-    my_plot = plot_population_with_tess(best_ind_i,fitness_function,geo_info,title = "$(f["constraint"]): $(round(f["const_val"])), beta: $(f["beta_val"]), alpha: $(f["alpha_val"])")
-    savefig(my_plot,my_savename_pdf)
+    #my_plot = plot_population_with_tess(best_ind_i,fitness_function,geo_info,title = "$(f["constraint"]): $(round(f["const_val"])), beta: $(f["beta_val"]), alpha: $(f["alpha_val"])")
+    #savefig(my_plot,my_savename_pdf)
 end
 
 ##
