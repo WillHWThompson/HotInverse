@@ -21,6 +21,7 @@ Rasters = "a3a2b9e3-a471-40c9-b274-f788e487c689"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
+VoronoiCells = "e3e34ffb-84e9-5012-9490-92c94d0c60a4"
 
 [compat]
 DrWatson = "2.12.3"
