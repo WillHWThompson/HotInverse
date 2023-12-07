@@ -84,7 +84,6 @@ function mutate(genome::AbstractArray,geo_info::GeoInfo; num_inds_to_change = 1,
         new_genome[index] = gen_fac_pos(geo_info,n_facs =1)[1]
     end
 
-    println("mutated facilites")
 
     if rand()<add_fac_prob
         push!(new_genome, gen_fac_pos(geo_info,n_facs = 1)[1])
@@ -94,7 +93,6 @@ function mutate(genome::AbstractArray,geo_info::GeoInfo; num_inds_to_change = 1,
         splice!(new_genome,index_to_remove)
     end
     
-    println("finished mutaton")
 
     if has_repeated_vector(new_genome)
         println("repreated mutation")

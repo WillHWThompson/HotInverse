@@ -50,7 +50,6 @@ function gen_fac_pos(pop_data::PopulationRaster,geo_info::GeoInfo;n_facs::Int = 
     in_bounds_index_pairs = []
     #@generate facility locatons and ensure theyare in bounds, iterate until we have n_facs
     while length(in_bounds_index_pairs) < n_facs
-        println("attempting facilty placement")
         point_indicies = map(x-> sample(x,(1,n_facs)),ranges)#sample random points from these range objects for x and y
         indices_pairs = map((i,j) -> [i,j],point_indicies...)#get pairs of indicie values
         is_in_bounds = map(index_i -> ras[index_i...] != MISSING_VAL,indices_pairs)#is the proposed facility in bounds?
@@ -67,7 +66,6 @@ function gen_fac_pos(pop_data::PopulationRaster,geo_info::GeoInfo;n_facs::Int = 
     point_coords = map(i -> ras.dims[i][vec(in_bound_seperated[i])],1:length(ras.dims))#get the coord values form raster index
     point_pairs = map((i,j) -> [i,j],point_coords...)
     fac_points = GeometryBasics.Point2.(point_pairs)#conver to Point2 structs
-    print("generated facility")
     return fac_points
 end
 
@@ -120,7 +118,7 @@ function generate_genome(my_population::PopulationPoints,my_geo_info::GeoInfo;n_
 end
 
 function generate_genome(my_population::PopulationRaster,my_geo_info::GeoInfo;n_facs = 10,kwargs...)
-    fac_points = gen_fac_pos(my_population,geo_info)
+    fac_points = gen_fac_pos(my_population,my_geo_info)
     static_fac_points = SVector{length(fac_points)}(fac_points)
     if has_repeated_vector(static_fac_points)
         return generate_genome(my_population,my_geo_info,n_facs = n_facs,kwargs...)

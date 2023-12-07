@@ -69,10 +69,8 @@ function sim_anneal(fitness_function::Function,generate_genome_function::Functio
         if t % 50 == 0
            println("\tgeneration $t")
         end
-        println("start of loop")
         new_individual1 = mutation_function(ind)
 
-        println("generation $t")
         if constraint_function(new_individual1)
             fit_diff = new_individual1.fitness-ind.fitness#the difference in fitness between this generation and the next
             quality_exp = exp((fit_diff)/(init_t*(delta_t^t)))
@@ -86,9 +84,6 @@ function sim_anneal(fitness_function::Function,generate_genome_function::Functio
            a= constraint_function(new_individual1)
            #println("individual violated constraint. value: $value, constraint: $my_constraint")
         end
-
-        @info "we got here"
-        
         solution = ind
         solution_fitness = solution.fitness
         #@show solution_fitness
@@ -105,7 +100,6 @@ function sim_anneal(fitness_function::Function,generate_genome_function::Functio
         #solutions_over_time[generation] = solution
         push!(solutions_over_time,solution)
 
-        @info "end of loope"
     end
      
 
