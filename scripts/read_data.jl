@@ -1,8 +1,12 @@
 using Distributed
+
+using DrWatson
+@quickactivate "HotInverse"
+
+
+
 @everywhere begin 
-    using DrWatson
-    @quickactivate "HotInverse"
-    using Shapefile
+    #using Shapefile
     using Revise
     include(srcdir("HotInverse.jl"))#this line will make all the code available
 end

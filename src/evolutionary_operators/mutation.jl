@@ -95,7 +95,6 @@ function mutate(genome::AbstractArray,geo_info::GeoInfo; num_inds_to_change = 1,
     
 
     if has_repeated_vector(new_genome)
-        println("repreated mutation")
         return mutate(genome,geo_info,num_inds_to_change = num_inds_to_change,add_fac_prob = add_fac_prob,remove_fac_prob = remove_fac_prob)
     else
         return SVector{(length(new_genome)),Point2{Float64}}(new_genome)

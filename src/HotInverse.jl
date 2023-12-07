@@ -1,17 +1,20 @@
-using DrWatson
-using Plots
+
 using Reexport
+@reexport using DrWatson
+@reexport using Plots
 @reexport using VoronoiCells, GeometryBasics,Random,Shapefile,GeoInterface
 @reexport using GeometryTypes: in as GT_in
 @reexport using NearestNeighbors, StaticArrays, DataFrames,Statistics,StatsBase,Distributions,Rasters   
 @reexport using Revise, Infiltrator
 @reexport using Logging
 
+
+
 #make sure you include Shapefile seperatley
 
 const RAND_INTERVAL = 0.001
 
-@quickactivate "HOTInverse"
+@quickactivate "HotInverse"
 
 #include(srcdir("genome.jl"))
 include(srcdir("data_structures","GeoInfo.jl"))
@@ -31,6 +34,5 @@ include(srcdir("utils/","run_evo_alg.jl"))
 
 include(srcdir("algorithms/","evo_algorithm.jl"))
 include(srcdir("algorithms/","sim_anneal.jl"))
-
 
 

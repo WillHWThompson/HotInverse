@@ -97,16 +97,15 @@ function plot_voronoi_raster(genome,fitness_function,geo_info;title = "")
     return current()
 end
 
-function plot_population_with_tess(genome,fitness_function,geo_info;title = "")
+function plot_population_with_tess(v_ind,fitness_function,geo_info;title = "")
     #v_ind = make_voronoi_individual(genome,fitness_function,geo_info)
-    v_ind  = genome
     mbr_rect = convertMBRtoRectangle(geo_info.MBR)
-    my_tess = voronoicells(Vector([i for i in genome]),mbr_rect)
+    my_tess = voronoicells(Vector([i for i in v_ind.genome]),mbr_rect)
     tess_poly = GeometryBasics.Polygon.(my_tess.Cells)
     tess_mp = MultiPolygon(tess_poly)
     heatmap(geo_info.population.pop_points,legend = false)
     plot!(my_tess,color = :white,legend = false)
-    scatter!(genome,color = :white,title = title,legend = false)
+    scatter!(v_ind.genome,color = :white,title = title,legend = false)
     return current()
 end
 
