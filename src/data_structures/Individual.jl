@@ -118,7 +118,8 @@ function generate_genome(my_population::PopulationPoints,my_geo_info::GeoInfo;n_
 end
 
 function generate_genome(my_population::PopulationRaster,my_geo_info::GeoInfo;n_facs = 10,kwargs...)
-    fac_points = gen_fac_pos(my_population,my_geo_info)
+    println("Hello")
+    fac_points = gen_fac_pos(my_population,my_geo_info,n_facs = n_facs,kwargs...)
     static_fac_points = SVector{length(fac_points)}(fac_points)
     if has_repeated_vector(static_fac_points)
         return generate_genome(my_population,my_geo_info,n_facs = n_facs,kwargs...)

@@ -49,7 +49,8 @@ end
                                                            constraint_closure,
                                                            mutation_function,
                                                            total_generations = 5000,
-                                                           delta_t = 5)
+                                                           delta_t = 5,
+                                                          genome_length = const_val)
     println("finished sim")
     fulld = copy(d)
     fulld["fitness_over_time"] = fitness_over_time
@@ -68,7 +69,7 @@ end
     #model parameters
     my_beta = 1
     my_n_facs = 100
-    my_num_inds_to_change = 2
+    my_num_inds_to_change = 1
 
     #fitness closures
     dist_metric_cloj = (x,y) -> euclidean_exp(x,y;beta = my_beta) 
@@ -76,7 +77,6 @@ end
     mean_distance_exp = x -> mean_distance(x,beta_val)#closure for mean fitness function with correct exponent
 
     #create all closures
-    generate_genome_cloj = x -> generate_genome(geo_info.population,geo_info,n_facs = x)
     generate_genome_function() = generate_genome(geo_info.population,geo_info,n_facs = my_n_facs)
     generate_ind_function() =  make_voronoi_individual(generate_genome_function,fitness_function,geo_info)
     dist_metric_cloj = (x,y) -> euclidean_exp(x,y;beta = my_beta) 
@@ -84,11 +84,10 @@ end
     instant_ind_function = (x) -> make_voronoi_individual(x,fitness_function,geo_info)
     mutation_function =(x) -> mutate(x,geo_info,instant_ind_function,num_inds_to_change = my_num_inds_to_change,remove_fac_prob = 0.0,add_fac_prob = 0.0)
 
-    #constraint_funcs = [area_constraint,perimeter_constraint]
     constraint_funcs = [number_constraint]
     constraint_range = [100,300]
     beta_value_range = [0.0,0.5,1.0]
-    alpha_value_range = [1]
+    alpha_value_range = [1.0]
 
 
     all_params = Dict(

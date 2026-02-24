@@ -48,7 +48,7 @@ end
                                                            generate_ind_function,
                                                            constraint_closure,
                                                            mutation_function,
-                                                           total_generations = 500,
+                                                           total_generations = 5000,
                                                            delta_t = 5)
     println("finished sim")
     fulld = copy(d)
@@ -66,11 +66,11 @@ end
     
     @everywhere begin     #create geo info
     dist = MvNormal([0.5,0.5],[0.1 0.0;0.0 0.1])
-    geo_info = init_geoinfo(1,1,100,dist)
+    geo_info = init_geoinfo(1,1,1000,dist)
     generate_genome(geo_info.population,geo_info,n_facs = 10)
     #model parameters
     my_beta = 1
-    my_n_facs = 10
+    my_n_facs = 100
     my_num_inds_to_change = 2
 
     #fitness closures

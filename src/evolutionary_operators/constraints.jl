@@ -14,7 +14,7 @@ end
 
 function number_constraint(individual::VoronoiIndividual,number_constraint::Real,exponent::Real = 1)
     ind_sum = length(individual.genome)
-    bool_val = ind_sum  ==  number_constraint ? true : false
+    bool_val = ind_sum  <=  number_constraint ? true : false
     @debug "constraint_sum $ind_sum, constraint_value: $number_constraint" #$(sum(individual.areas)"
     return bool_val
 end

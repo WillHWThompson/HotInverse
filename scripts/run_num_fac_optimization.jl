@@ -58,8 +58,6 @@ end
    return fulld
 end
 
-
-
 ##
 
 @everywhere function param_sweep()
@@ -79,19 +77,19 @@ end
     mean_distance_exp = x -> mean_distance(x,beta_val)#closure for mean fitness function with correct exponent
 
     #create all closures
-    generate_genome_cloj = x -> generate_genome(geo_info.population,geo_info,n_facs = x)
+    #generate_genome_cloj = x -> generate_genome(geo_info.population,geo_info,n_facs = x)
     generate_genome_function() = generate_genome(geo_info.population,geo_info,n_facs = my_n_facs)
     generate_ind_function() =  make_voronoi_individual(generate_genome_function,fitness_function,geo_info)
     dist_metric_cloj = (x,y) -> euclidean_exp(x,y;beta = my_beta) 
     fitness_function = (x,y,z) -> mean_dist(x,y,z,dist_metric_cloj)
     instant_ind_function = (x) -> make_voronoi_individual(x,fitness_function,geo_info)
-    mutation_function =(x) -> mutate(x,geo_info,instant_ind_function,num_inds_to_change = my_num_inds_to_change,remove_fac_prob = 0.1,add_fac_prob = 0.1)
+    mutation_function =(x) -> mutate(x,geo_info,instant_ind_function,num_inds_to_change = my_num_inds_to_change,remove_fac_prob = 0.0,add_fac_prob = 0.0)
 
     #constraint_funcs = [area_constraint,perimeter_constraint]
     constraint_funcs = [number_constraint]
-    constraint_range = [100,300]
-    beta_value_range = [1]
-    alpha_value_range = [1]
+    constraint_range = [100.,300.]
+    beta_value_range = [1.]
+    alpha_value_range = [1.]
 
 
     all_params = Dict(
@@ -116,7 +114,7 @@ end
             push!(f_list,f)
             #save simulation
             f["constraint"] = String(Symbol(f["constraint"]))
-            my_savename = datadir("rasters","constraint_sweep_1",savename(f,"jld2")) 
+            my_savename = datadir("rasters","num_fac_optimization",savename(f,"jld2")) 
             @show my_savename
             wsave(my_savename,f)
             #wsave(my_savename,f)
